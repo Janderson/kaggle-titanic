@@ -1,4 +1,4 @@
-# This script try a submission using simple decision tree 
+require(xgboost)
 
 #importing data - 
 
@@ -41,20 +41,18 @@ test <- dataCleaning(test)
 
 
 
-# first using RPART
-library("rpart")
-library("rpart.plot")
-
-# method as class return a binary tree
-fit <- rpart(data=train, Survived ~ Sex + Age + Embarked + Pclass + title + cabCol, method = "class", control = rpart.control(xval=5))
 
 
-#some visualization
-rpart.plot(fit)
+data(agaricus.train, package='xgboost')
+data(agaricus.test, package='xgboost')
+train <- agaricus.train
+test <- agaricus.test
 
 
-#make the prediction
-result$Survived <- predict(fit, test, type="class")
+model <- xgboost(data = train$data, label = train$label,
+                 nrounds = 2, objective = "binary:logistic")
 
-# export data
-write.csv(result, file="data/result.csv", row.names = F )
+preds = predict(model, test$data)
+
+cv.res <- xgb.cv(data = train$data, label = train$label, nfold = 5,
+                 nrounds = 200, objective = "binary:logistic")
